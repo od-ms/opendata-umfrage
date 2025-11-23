@@ -1,0 +1,29 @@
+- category: "Mobilität & Stadtleben"
+  question: "Kommst du heute eher mit..."
+  answer1: "Fahrrad 🚲"
+  answer2: "Zu Fuß 🚶"
+
+- category: "Mobilität & Stadtleben"
+  question: "Wohnst du..."
+  answer1: "in Münster"
+  answer2: "außerhalb"
+
+- category: "Mobilität & Stadtleben"
+  question: "Magst du Busfahren?"
+  answer1: "Ja"
+  answer2: "Nein"
+
+- category: "Mobilität & Stadtleben"
+  question: "Findest du Münster fahrradfreundlich?"
+  answer1: "Ja"
+  answer2: "Nein"
+
+- category: "Bibliothek & Medien"
+  question: "Liest du lieber… "
+  answer1: "analog 📚"
+  answer2: "digital 📱"
+
+- category: "Bibliothek & Medien"
+  question: "Bist du heute…"
+  answer1: "gezielt hier"
+  answer2: "zufällig vorbeigekommen"

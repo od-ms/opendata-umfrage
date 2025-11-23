@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Opendata Umfrage</title>
+    <style>
+      body { font-family: Arial, Helvetica, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; }
+      .card { border:1px solid #ddd; padding:2rem; width:640px; text-align:center; }
+      .question { font-size:1.25rem; margin-bottom:1rem }
+      .answers { display:flex; gap:1rem; justify-content:center }
+      .btn { padding:1rem 2rem; border-radius:6px; cursor:pointer; font-size:1rem }
+      .btn.primary { background:#007bff; color:#fff }
+      .hint { margin-top:1rem; color:#666 }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div id="question-area">
+        <div class="question" id="question">Loading…</div>
+        <div class="answers">
+          <button id="a1" class="btn primary">1</button>
+          <button id="a2" class="btn">2</button>
+        </div>
+        <div class="hint">Drücke Taste <strong>1</strong> oder <strong>2</strong> um zu antworten. <a href="/dashboard.html">Auswertung (Dashboard)</a></div>
+      </div>
+    </div>
+
+      <script>
+      const questionEl = document.getElementById('question');
+      let current = null;
+
+      async function loadQuestion() {
+        try {
+          const r = await fetch('/api/questions/random');
+          if (!r.ok) throw new Error('no question');
+          const q = await r.json();
+          current = q;
+          questionEl.textContent = q.question + ' (' + q.category + ')';
+          document.getElementById('a1').textContent = '1: ' + q.answer1;
+          document.getElementById('a2').textContent = '2: ' + q.answer2;
+        } catch (err) {
+          questionEl.textContent = 'Keine Fragen vorhanden. Füge `data/questions.yml` hinzu.';
+          current = null;
+        }
+      }
+
+      async function submitAnswer(n) {
+        if (!current) return;
+        await fetch('/api/answers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionId: current.id, answer: n })
+        });
+        loadQuestion();
+      }
+
+      document.getElementById('a1').addEventListener('click', () => submitAnswer(1));
+      document.getElementById('a2').addEventListener('click', () => submitAnswer(2));
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '1') submitAnswer(1);
+        if (e.key === '2') submitAnswer(2);
+      });
+
+      loadQuestion();
+    </script>
+  </body>
+</html>

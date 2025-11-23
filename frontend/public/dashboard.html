@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Auswertung — Opendata Umfrage</title>
+    <style>
+      body { font-family: Arial, Helvetica, sans-serif; padding:1rem; max-width:1000px; margin:0 auto }
+      h1 { margin-bottom:0.25rem }
+      .top { display:flex; gap:1rem; align-items:center; justify-content:space-between }
+      table { border-collapse:collapse; width:100%; margin-top:1rem }
+      th, td { border:1px solid #ddd; padding:0.5rem; text-align:left }
+      .timeline { margin-top:1rem }
+      .back { margin-top:1rem }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <h1>Auswertung</h1>
+      <div>Frontend: <a href="/">Frage-Maschine</a></div>
+    </div>
+
+    <section id="totals">
+      <h2>Gesamt (Antworten)</h2>
+      <div id="totals-area">Lädt…</div>
+    </section>
+
+    <section id="per-question">
+      <h2>Pro Frage</h2>
+      <div id="questions-area">Lädt…</div>
+    </section>
+
+    <section id="timeline">
+      <h2>Verlauf (15‑Minuten)</h2>
+      <div id="timeline-area">Lädt…</div>
+    </section>
+
+    <div class="back"><a href="/">Zurück zur Umfrage</a></div>
+
+    <script>
+      function el(tag, text) { const e = document.createElement(tag); if (text) e.textContent = text; return e }
+
+      async function loadData() {
+        const [questionsRes, statsRes, answersRes] = await Promise.all([
+          fetch('/api/questions'),
+          fetch('/api/stats'),
+          fetch('/api/answers?limit=5000')
+        ]);
+        const questions = await questionsRes.json();
+        const stats = await statsRes.json();
+        const answers = await answersRes.json();
+
+        // Totals
+        const totalsArea = document.getElementById('totals-area');
+        totalsArea.innerHTML = '';
+        const tTable = el('table');
+        const th = el('tr'); th.appendChild(el('th','Antwort')); th.appendChild(el('th','Anzahl')); tTable.appendChild(th);
+        for (const k of Object.keys(stats.totals || {}).sort()) {
+          const tr = el('tr'); tr.appendChild(el('td', k === '1' ? 'Antwort 1' : 'Antwort 2')); tr.appendChild(el('td', String(stats.totals[k] || 0))); tTable.appendChild(tr);
+        }
+        totalsArea.appendChild(tTable);
+
+        // Per question
+        const qa = document.getElementById('questions-area'); qa.innerHTML = '';
+        const qTable = el('table');
+        const hdr = el('tr'); hdr.appendChild(el('th','Frage')); hdr.appendChild(el('th','Antwort 1')); hdr.appendChild(el('th','Antwort 2')); qTable.appendChild(hdr);
+        for (const q of questions) {
+          const counts = stats.byQuestion && stats.byQuestion[q.id] ? stats.byQuestion[q.id] : { '1': 0, '2': 0 };
+          const tr = el('tr'); tr.appendChild(el('td', q.question)); tr.appendChild(el('td', String(counts['1'] || 0))); tr.appendChild(el('td', String(counts['2'] || 0))); qTable.appendChild(tr);
+        }
+        qa.appendChild(qTable);
+
+        // Timeline: aggregate 15-minute buckets
+        const area = document.getElementById('timeline-area'); area.innerHTML = '';
+        if (!answers.length) { area.textContent = 'Keine Antworten vorhanden.'; return }
+        // compute bucket key
+        const BUCKET = 15 * 60 * 1000;
+        const counts = {};
+        let minTs = Infinity, maxTs = 0;
+        answers.forEach(a => {
+          const b = Math.floor(a.ts / BUCKET) * BUCKET;
+          counts[b] = (counts[b] || 0) + 1;
+          if (a.ts < minTs) minTs = a.ts;
+          if (a.ts > maxTs) maxTs = a.ts;
+        });
+        // build sorted buckets from min to max
+        const rows = [];
+        for (let t = Math.floor(minTs/BUCKET)*BUCKET; t <= maxTs; t += BUCKET) {
+          rows.push({ ts: t, cnt: counts[t] || 0 });
+        }
+        const tlTable = el('table');
+        const htr = el('tr'); htr.appendChild(el('th','Intervall')); htr.appendChild(el('th','Anzahl')); tlTable.appendChild(htr);
+        rows.forEach(r => {
+          const tr = el('tr'); tr.appendChild(el('td', new Date(r.ts).toLocaleString())); tr.appendChild(el('td', String(r.cnt))); tlTable.appendChild(tr);
+        });
+        area.appendChild(tlTable);
+      }
+
+      loadData().catch(err => { console.error(err); document.body.appendChild(el('div','Fehler beim Laden der Daten')) });
+    </script>
+  </body>
+</html>
