@@ -1,20 +1,103 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Opendata Umfrage</title>
-    <style>
-      body { font-family: Arial, Helvetica, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; }
-      .card { border:1px solid #ddd; padding:2rem; width:640px; text-align:center; }
-      .question { font-size:1.25rem; margin-bottom:1rem }
-      .answers { display:flex; gap:1rem; justify-content:center }
-      .btn { padding:1rem 2rem; border-radius:6px; cursor:pointer; font-size:1rem }
-      .btn.primary { background:#007bff; color:#fff }
-      .hint { margin-top:1rem; color:#666 }
-    </style>
-  </head>
-  <body>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>Münsters Mini-Umfrage</title>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css?v2" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand fs-1" href="#page-top">Münsters Mini-Umfrage</a>
+                <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item mx-0 mx-lg-1"><span class="text-primary
+                             py-3 px-0 px-lg-3  fs-1" >Zwei Knöpfe, eine Meinung</span></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+   
+        <!-- Icon & Kategorie-->
+        <header class="myheader masthead bg-primary text-white">
+            <div class="container d-flex align-items-center flex-row">
+                <img class="masthead-avatar mb-3" src="assets/img/avataaars.svg" alt="..." />
+                <p style="display:inline-block; margin-left:40px"
+                  class="masthead-subheading fs-3">Umfrage-Kategorie:<br /> 
+                  <b id="category" class="fs-1">Stadtentwicklung & Digitalisierung</b></p>
+            </div>
+        </header>
+
+        <!-- Frage-->
+        <section class=" page-section portfolio" id="portfolio">
+            <div class="container">
+
+                <h1 id="question" style="font-size:5em;line-height:1em;margin-bottom:100px" class="page-section-heading text-center text-uppercase mb-7 text-secondary">Liest Du lieber..</h1>
+
+                <!-- Antworten -->
+                <div id="answers" class="row justify-content-center">
+                    <div class="col-md-6 col-lg-5 mb-5">
+                        <div id="a1" class="answer bg-info rounded portfolio-item-caption d-flex flex-column align-items-center justify-content-center h-100 w-100 text-center vibrate">
+                            <div class="a1 mt-2">Antwort 1:</div>
+                            <h2 id="a1t" class="page-section-heading text-secondary m-5">digital</h2>
+                      </div>
+                    </div>
+                    <div class="col-md-6 col-lg-2 mb-5">
+                      &nbsp;                    </div>
+                    <div class="col-md-6 col-lg-5 mb-5">
+                        <div id="a2" class="answer bg-info rounded portfolio-item-caption d-flex flex-column align-items-center justify-content-center h-100 w-100 text-center vibrate">
+                            <div class="a1 mt-2">Antwort 2:</div>
+                            <h2 id="a2t" class="page-section-heading text-secondary m-5">digital</h2>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+<style>
+  .answer {
+    container-type: inline-size;
+  }
+  #answers .answer h2 {font-size: 13cqw; line-height: 13cqw;word-break: break-word;}
+
+
+
+.vibrate {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #fc0303;
+  transform: scale(1);
+  box-shadow: 0 0 0 black;
+  animation: anim-vibrate 2s infinite;
+}
+@keyframes anim-vibrate {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(252, 3, 3, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0.6rem rgba(0, 0, 0, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+</style>
+
+  <!-- body>
     <div class="card">
       <div id="question-area">
         <div class="question" id="question">Loading…</div>
@@ -24,10 +107,11 @@
         </div>
         <div class="hint">Drücke Taste <strong>1</strong> oder <strong>2</strong> um zu antworten. <a href="/dashboard.html">Auswertung (Dashboard)</a></div>
       </div>
-    </div>
+    </div -->
 
       <script>
       const questionEl = document.getElementById('question');
+      const catEl = document.getElementById('category');
       let current = null;
 
       async function loadQuestion() {
@@ -36,9 +120,10 @@
           if (!r.ok) throw new Error('no question');
           const q = await r.json();
           current = q;
-          questionEl.textContent = q.question + ' (' + q.category + ')';
-          document.getElementById('a1').textContent = '1: ' + q.answer1;
-          document.getElementById('a2').textContent = '2: ' + q.answer2;
+          questionEl.textContent = q.question;
+          catEl.textContent = q.category;       
+          document.getElementById('a1t').textContent = q.answer1;
+          document.getElementById('a2t').textContent = q.answer2;
         } catch (err) {
           questionEl.textContent = 'Keine Fragen vorhanden. Füge `data/questions.yml` hinzu.';
           current = null;
