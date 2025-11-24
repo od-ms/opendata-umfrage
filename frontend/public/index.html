@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta
+  name="viewport"
+  content="height=device-height, initial-scale=1.0, viewport-fit=contain" />
+        <!--meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes" /-->
         <title>Münsters Mini-Umfrage</title>
         <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
         <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
@@ -32,9 +35,11 @@
         <header class="myheader masthead bg-primary text-white">
             <div class="container d-flex align-items-center flex-row">
                 <img class="masthead-avatar mb-3" src="assets/img/avataaars.svg" alt="..." />
-                <p style="display:inline-block; margin-left:40px"
-                  class="masthead-subheading fs-3">Umfrage-Kategorie:<br /> 
-                  <b id="category" class="fs-1">Stadtentwicklung & Digitalisierung</b></p>
+                <div style="display:inline-block; margin-left:40px" class="masthead-subheading fs-3">
+                  Umfrage-Kategorie:<br />
+                  <b id="category" class="fs-1">Stadtentwicklung & Digitalisierung</b>
+                  <div id="qnum" class="fs-3" style="margin-top:8px;">&nbsp;</div>
+                </div>
             </div>
         </header>
 
@@ -69,6 +74,36 @@
      cursor: pointer;
   }
   #answers .answer h2 {font-size: 13cqw; line-height: 13cqw;word-break: break-word;}
+
+/* Animations: highlight selected answer and fade/slide-in new question */
+.answer.highlight {
+  animation: highlight-pulse 1s ease-in-out forwards;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+  transform: translateY(-6px) scale(1.02);
+}
+@keyframes highlight-pulse {
+  0% { transform: translateY(0) scale(1); filter: brightness(1); }
+  50% { transform: translateY(-10px) scale(1.06); filter: brightness(1.08); }
+  100% { transform: translateY(0) scale(1.22); filter: brightness(1.43); opacity: 0 }
+}
+
+/* Entrance animation for question and answers (now up to 1s) */
+.fade-slide-in {
+  animation: fade-slide-in 1s ease-out forwards;
+}
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade-out animation used when a question and the non-chosen answer disappear */
+.fade-out {
+  animation: fade-out 700ms ease-out forwards;
+}
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-12px) scale(0.98); }
+}
 
 
 
@@ -113,32 +148,101 @@
       <script>
       const questionEl = document.getElementById('question');
       const catEl = document.getElementById('category');
-      let current = null;
+      const qnumEl = document.getElementById('qnum');
+      let questions = [];
+      let currentIndex = 0;
 
-      async function loadQuestion() {
+      async function loadQuestions() {
         try {
-          const r = await fetch('/api/questions/random');
-          if (!r.ok) throw new Error('no question');
-          const q = await r.json();
-          current = q;
-          questionEl.textContent = q.question;
-          catEl.textContent = q.category;       
-          document.getElementById('a1t').textContent = q.answer1;
-          document.getElementById('a2t').textContent = q.answer2;
+          const r = await fetch('/api/questions');
+          if (!r.ok) throw new Error('no questions');
+          const qs = await r.json();
+          if (!Array.isArray(qs) || qs.length === 0) throw new Error('empty');
+          // assume server returns questions in the desired order (file order)
+          questions = qs;
+          currentIndex = 0;
+          renderCurrent();
         } catch (err) {
           questionEl.textContent = 'Keine Fragen vorhanden. Füge `data/questions.yml` hinzu.';
-          current = null;
+          questions = [];
+          currentIndex = 0;
+          catEl.textContent = '';
+          qnumEl.textContent = '';
         }
       }
 
+      function renderCurrent() {
+        if (!questions.length) return;
+        const q = questions[currentIndex];
+        questionEl.textContent = q.question;
+        catEl.textContent = q.category || '';
+        qnumEl.textContent = `Frage ${currentIndex + 1} von ${questions.length}`;
+        document.getElementById('a1t').textContent = q.answer1;
+        document.getElementById('a2t').textContent = q.answer2;
+        // apply entrance animation to question, category, qnum and answers
+        applyEntrance(questionEl);
+        applyEntrance(catEl);
+        applyEntrance(qnumEl);
+        applyEntrance(document.getElementById('a1'));
+        applyEntrance(document.getElementById('a2'));
+      }
+
       async function submitAnswer(n) {
-        if (!current) return;
-        await fetch('/api/answers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ questionId: current.id, answer: n })
-        });
-        loadQuestion();
+        if (!questions.length) return;
+        if (window.__animating) return; // prevent double submits during animation
+        const q = questions[currentIndex];
+        const chosenEl = document.getElementById(n === 1 ? 'a1' : 'a2');
+        const otherEl = document.getElementById(n === 1 ? 'a2' : 'a1');
+        // highlight chosen answer and simultaneously fade out question + non-chosen
+        chosenEl.classList.add('highlight');
+        // remove the ongoing 'vibrate' animation so fade-out/transform works reliably
+        chosenEl.classList.remove('vibrate');
+        otherEl.classList.remove('vibrate');
+        questionEl.classList.add('fade-out');
+        catEl.classList.add('fade-out');
+        qnumEl.classList.add('fade-out');
+        otherEl.classList.add('fade-out');
+        window.__animating = true;
+        // wait for animation duration (1s) then submit and advance
+        setTimeout(async () => {
+          try {
+            await fetch('/api/answers', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ questionId: q.id, answer: n })
+            });
+          } catch (e) {
+            /* ignore network errors for now */
+          }
+          // cleanup fade/highlight classes so renderCurrent can animate fresh
+          chosenEl.classList.remove('highlight');
+          questionEl.classList.remove('fade-out');
+          catEl.classList.remove('fade-out');
+          qnumEl.classList.remove('fade-out');
+          otherEl.classList.remove('fade-out');
+          // advance in ascending order, wrap after the last question
+          currentIndex = (currentIndex + 1) % questions.length;
+          renderCurrent();
+          // small extra delay to avoid reentrancy
+          setTimeout(() => { window.__animating = false; }, 80);
+        }, 1000);
+      }
+
+      function applyEntrance(el) {
+        if (!el) return;
+        el.classList.remove('fade-slide-in');
+        // force reflow to restart animation
+        void el.offsetWidth;
+        el.classList.add('fade-slide-in');
+        // remove class after animation ends to allow re-trigger
+        setTimeout(() => {
+          el.classList.remove('fade-slide-in');
+          // re-enable vibrate on answers after entrance completes
+          const a1 = document.getElementById('a1');
+          const a2 = document.getElementById('a2');
+          if (a1 && !a1.classList.contains('vibrate')) a1.classList.add('vibrate');
+          if (a2 && !a2.classList.contains('vibrate')) a2.classList.add('vibrate');
+        }, 1050);
       }
 
       document.getElementById('a1').addEventListener('click', () => submitAnswer(1));
@@ -149,7 +253,7 @@
         if (e.key === '2') submitAnswer(2);
       });
 
-      loadQuestion();
+      loadQuestions();
     </script>
   </body>
 </html>

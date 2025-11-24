@@ -7,6 +7,20 @@
   <title>Tabler Demo</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<style>
+
+span.mysymbol {
+    width: 42px;
+    height: 42px;
+    display: block;
+    border-radius: 6px;
+    color: white;
+    font-size: 20pt;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: 2px;
+}
+</style>
 </head>
 
 <body>
@@ -59,7 +73,22 @@
       <!-- BEGIN PAGE BODY -->
       <div class="page-body">
         <div class="container-xl">
-          <div class="row row-deck row-cards mb-2">
+          <div id="beispielantworten" class="row row-deck row-cards mb-2">
+            <div class="beispielantwort col-sm-6 col-lg-3">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="h2 atext">Welcome back, Paweł</h3>
+                  <span class="aanswer h1 d-inline-flex align-items-center lh-1">
+                  </span>
+
+                  <div class="d-flex align-items-baseline mb-2">
+                    <div class="acount subheader">25,782</div>
+
+                  </div>
+                  <div class="beispielchart" class="position-relative"></div>
+                </div>
+              </div>
+            </div>
 
             <div class="col-sm-6 col-lg-3">
               <div class="card">
@@ -83,21 +112,6 @@
                   <!-- div class="text-secondary mt-2">24,635 users increased from last month</div -->
                 </div>
                 <div id="chart-visitors" class="position-relative"></div>
-              </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-              <div class="card" id="beispielantwort">
-                <div class="card-body">
-                  <h3 class="h2 atext">Welcome back, Paweł</h3>
-                  <span class="aanswer h1 d-inline-flex align-items-center lh-1">
-                  </span>
-
-                  <div class="d-flex align-items-baseline mb-2">
-                    <div class="acount subheader">25,782</div>
-
-                  </div>
-                  <div id="chart-active-users-3" class="position-relative"></div>
-                </div>
               </div>
             </div>
             <div class="col-sm-6 col-lg-6">
@@ -138,17 +152,11 @@
                   <div class="row align-items-center">
                     <div class="col-auto">
                       <span
-                        class="bg-primary text-white avatar"><!-- Download SVG icon from http://tabler.io/icons/icon/currency-dollar -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          class="icon icon-1">
-                          <path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2" />
-                          <path d="M12 3v3m0 12v3" />
-                        </svg></span>
+                        class="bg-primary mysymbol">1</span>
                     </div>
                     <div class="col">
-                      <div class="font-weight-medium">132 Sales</div>
-                      <div class="text-secondary">12 waiting payments</div>
+                      <div class="font-weight-medium">Antwort #1</div>
+                      <div id="a1count" class="text-secondary">12 waiting payments</div>
                     </div>
                   </div>
                 </div>
@@ -160,19 +168,11 @@
                   <div class="row align-items-center">
                     <div class="col-auto">
                       <span
-                        class="bg-green text-white avatar"><!-- Download SVG icon from http://tabler.io/icons/icon/shopping-cart -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          class="icon icon-1">
-                          <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                          <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                          <path d="M17 17h-11v-14h-2" />
-                          <path d="M6 5l14 1l-1 7h-13" />
-                        </svg></span>
+                        class="bg-secondary mysymbol">2</span>
                     </div>
                     <div class="col">
-                      <div class="font-weight-medium">78 Orders</div>
-                      <div class="text-secondary">32 shipped</div>
+                      <div class="font-weight-medium">Antwort #2</div>
+                      <div id="a2count" class="text-secondary">32 shipped</div>
                     </div>
                   </div>
                 </div>
@@ -328,7 +328,7 @@
   <script>
     function showRadialChart(ele, amount) {
       window.ApexCharts &&
-        new ApexCharts(document.getElementById(ele), {
+        new ApexCharts(ele, {
           chart: {
             type: "radialBar",
             fontFamily: "inherit",
@@ -413,12 +413,23 @@
         var keys = Object.keys(obj);
         return keys[keys.length * Math.random() << 0];
       };
-      const randomAnswerNr = randomProperty(stats.byQuestion);
-      const myTotal = stats.byQuestion[randomAnswerNr]['1'] + stats.byQuestion[randomAnswerNr]['2'];
-      document.getElementById('beispielantwort').querySelector('.atext').textContent = allQuestions[randomAnswerNr].question;
-      document.getElementById('beispielantwort').querySelector('.aanswer').textContent = allQuestions[randomAnswerNr].answer1;
-      document.getElementById('beispielantwort').querySelector('.acount').textContent = (stats.byQuestion[randomAnswerNr]['1']).toLocaleString() + " von " + myTotal.toLocaleString();
-      showRadialChart('chart-active-users-3', Math.round((stats.byQuestion[randomAnswerNr]['1'] / myTotal) * 100));
+      var clone = document.querySelector('#beispielantworten .beispielantwort').cloneNode(true);
+      document.querySelector('#beispielantworten .beispielantwort').remove();
+      var randomAnswerNr = randomProperty(stats.byQuestion);
+      for (i=0; i<4; i++) {
+        const myTotal = stats.byQuestion[randomAnswerNr]['1'] + stats.byQuestion[randomAnswerNr]['2'];
+        const tr = clone.cloneNode(true);
+        tr.querySelector('.atext').textContent = allQuestions[randomAnswerNr].question;
+        tr.querySelector('.aanswer').textContent = allQuestions[randomAnswerNr].answer1;
+        tr.querySelector('.acount').textContent = (stats.byQuestion[randomAnswerNr]['1']).toLocaleString() + " von " + myTotal.toLocaleString();
+        document.getElementById('beispielantworten').appendChild(tr);
+        showRadialChart(tr.querySelector('.beispielchart'), Math.round((stats.byQuestion[randomAnswerNr]['1'] / myTotal) * 100));
+        randomAnswerNr = ((randomAnswerNr + 1) % questions.length) +1;
+      }
+
+      // count answers
+      document.getElementById("a1count").textContent = stats.totals['1'] + " mal gewählt";
+      document.getElementById("a2count").textContent = stats.totals['2'] + " mal gewählt";
     }
 
 
@@ -429,20 +440,7 @@
 
 
 
-
-
-
-
     function dummy() {
-      // Totals
-      const totalsArea = document.getElementById('totals-area');
-      totalsArea.innerHTML = '';
-      const tTable = el('table');
-      const th = el('tr'); th.appendChild(el('th', 'Antwort')); th.appendChild(el('th', 'Anzahl')); tTable.appendChild(th);
-      for (const k of Object.keys(stats.totals || {}).sort()) {
-        const tr = el('tr'); tr.appendChild(el('td', k === '1' ? 'Antwort 1' : 'Antwort 2')); tr.appendChild(el('td', String(stats.totals[k] || 0))); tTable.appendChild(tr);
-      }
-      totalsArea.appendChild(tTable);
 
       // Per question
       const qa = document.getElementById('questions-area'); qa.innerHTML = '';
