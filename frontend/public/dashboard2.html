@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tabler Demo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<style>
+
+span.mysymbol {
+    width: 42px;
+    height: 42px;
+    display: block;
+    border-radius: 6px;
+    color: white;
+    font-size: 20pt;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: 2px;
+}
+</style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="page-wrapper">
+      <!-- BEGIN PAGE HEADER -->
+      <div class="page-header d-print-none" aria-label="Page header">
+        <div class="container-xl">
+          <div class="row g-2 align-items-center">
+            <div class="col">
+              <!-- Page pre-title -->
+              <div class="page-pretitle">Overview</div>
+              <h2 class="page-title">Dashboard</h2>
+            </div>
+            <!-- Page title actions -->
+            <div class="col-auto ms-auto d-print-none">
+Hier könnte Ihr Logo stehen              <!-- BEGIN MODAL -->
+              <!-- END MODAL -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END PAGE HEADER -->
+      <!-- BEGIN PAGE BODY -->
+      <div class="page-body">
+        <div class="container-xl">
+          <div id="beispielantworten" class="row row-deck row-cards mb-2">
+
+            <div class="col-sm-12 col-lg-12">
+              <div class="card">
+                <!-- div class="card-body">
+                  <div class="subheader">Übersicht über alle heute gegebenen Antworten</div>
+                </div -->
+                <div class="card-table table-responsive">
+                  <div id="mychart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js">
+  </script>
+  <script>
+    function showMyChart(ele, a1c, a2c, qlist, antwortmatrix, countmatrix) {
+      window.ApexCharts &&
+        new ApexCharts(ele, {
+          series: [{
+            name: 'Antwort #1',
+            data: a1c
+          }, {
+            name: 'Antwort #2',
+            data: a2c
+          }],
+          chart: {
+          type: 'bar',
+          height: 600,
+          stacked: true,
+        },
+        plotOptions: {
+          bar: {
+            horizontal: true,
+            dataLabels: {
+              total: {
+                enabled: true,
+                offsetX: 0,
+                style: {
+                  fontSize: '13px',
+                  fontWeight: 900
+                }
+              }
+            }
+          },
+        },
+        dataLabels: {
+          formatter: function (val, opt) {
+            if (countmatrix[opt.dataPointIndex][opt.seriesIndex] != val) { return val }
+            return antwortmatrix[opt.dataPointIndex][opt.seriesIndex] + " (" + val + ")"
+          }
+        },              
+        stroke: {
+          width: 1,
+          colors: ['#fff']
+        },
+        title: {
+          text: 'Übersicht über alle heute gegebenen Antworten'
+        },
+        xaxis: {
+          categories: qlist,
+          labels: {
+            formatter: function (val) {
+              return val + " mal"
+            }
+          }
+        },
+        yaxis: {
+          title: {
+            text: undefined
+          },
+          labels: {            
+            minWidth: 0,
+            maxWidth: 260,            
+            style: {
+              fontSize: '15px',
+              fontWeight: 700
+            }
+          }
+        },
+        tooltip: {
+          y: {
+            formatter: function (val) {
+              return val + " mal"
+            }
+          }
+        },
+        fill: {
+          opacity: 1
+        },
+        legend: {
+          position: 'top',
+          horizontalAlign: 'left',
+          offsetX: 40
+        }
+        }).render();
+    }
+  </script>
+
+  <script>
+    function el(tag, text) { const e = document.createElement(tag); if (text) e.textContent = text; return e }
+
+    async function loadData() {
+      const [questionsRes, statsRes, answersRes] = await Promise.all([
+        fetch('/api/questions'),
+        fetch('/api/stats'),
+        fetch('/api/answers?limit=50')
+      ]);
+      const questions = await questionsRes.json();
+      const stats = await statsRes.json();
+      const answers = await answersRes.json();
+
+      // get list of all questions by id
+      var allQuestions = {};
+      questions.forEach(q => { allQuestions[q.id] = q });
+
+      // Show total number of questions
+      const answers_count = stats.totals[1] + stats.totals[2];
+
+      var a1c = [];
+      var a2c = [];
+      var qlist = [];
+      var antwortmatrix = [];
+      var countmatrix = [];
+      for (const q of questions) {
+        const counts = stats.byQuestion && stats.byQuestion[q.id] ? stats.byQuestion[q.id] : { '1': 0, '2': 0 };
+        a1c.push(counts['1'] || 0);
+        a2c.push(counts['2'] || 0);
+        qlist.push( q.question ); 
+        antwortmatrix.push( {'0': q.answer1, '1': q.answer2} );
+        countmatrix.push( {'0': counts['1'] || 0, '1': counts['2'] || 0} );
+      }
+      showMyChart(document.getElementById('mychart'), a1c, a2c, qlist, antwortmatrix, countmatrix);
+    }
+
+
+
+
+
+
+
+
+
+    function dummy() {
+
+      // Per question
+      const qa = document.getElementById('questions-area'); qa.innerHTML = '';
+      const qTable = el('table');
+      const hdr = el('tr'); hdr.appendChild(el('th', 'Frage')); hdr.appendChild(el('th', 'Antwort 1')); hdr.appendChild(el('th', 'Antwort 2')); qTable.appendChild(hdr);
+      for (const q of questions) {
+        const counts = stats.byQuestion && stats.byQuestion[q.id] ? stats.byQuestion[q.id] : { '1': 0, '2': 0 };
+        const tr = el('tr'); tr.appendChild(el('td', q.question)); tr.appendChild(el('td', String(counts['1'] || 0))); tr.appendChild(el('td', String(counts['2'] || 0))); qTable.appendChild(tr);
+      }
+      qa.appendChild(qTable);
+
+      // Timeline: aggregate 15-minute buckets
+      const area = document.getElementById('timeline-area'); area.innerHTML = '';
+      if (!answers.length) { area.textContent = 'Keine Antworten vorhanden.'; return }
+      // compute bucket key
+      const BUCKET = 15 * 60 * 1000;
+      const counts = {};
+      let minTs = Infinity, maxTs = 0;
+      answers.forEach(a => {
+        const b = Math.floor(a.ts / BUCKET) * BUCKET;
+        counts[b] = (counts[b] || 0) + 1;
+        if (a.ts < minTs) minTs = a.ts;
+        if (a.ts > maxTs) maxTs = a.ts;
+      });
+      // build sorted buckets from min to max
+      const rows = [];
+      for (let t = Math.floor(minTs / BUCKET) * BUCKET; t <= maxTs; t += BUCKET) {
+        rows.push({ ts: t, cnt: counts[t] || 0 });
+      }
+      const tlTable = el('table');
+      const htr = el('tr'); htr.appendChild(el('th', 'Intervall')); htr.appendChild(el('th', 'Anzahl')); tlTable.appendChild(htr);
+      rows.forEach(r => {
+        const tr = el('tr'); tr.appendChild(el('td', new Date(r.ts).toLocaleString())); tr.appendChild(el('td', String(r.cnt))); tlTable.appendChild(tr);
+      });
+      area.appendChild(tlTable);
+    }
+
+    loadData().catch(err => { console.error(err); document.body.appendChild(el('div', 'Fehler beim Laden der Daten')) });
+  </script>
+</body>
