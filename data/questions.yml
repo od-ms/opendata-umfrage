@@ -13,11 +13,6 @@
   answer1: "Ja"
   answer2: "Nein"
 
-- category: "Mobilität & Stadtleben"
-  question: "Findest du Münster fahrradfreundlich?"
-  answer1: "Ja"
-  answer2: "Nein"
-
 - category: "Bibliothek & Medien"
   question: "Liest du lieber… "
   answer1: "analog 📚"
@@ -28,37 +23,22 @@
   answer1: "gezielt hier"
   answer2: "zufällig vorbeigekommen"
 
-- category: "Spaßfragen"
-  question: "Münster Tatort?"
-  answer1: "Ich bin Tatort-Fan 🕵️"
-  answer2: "Tatort, Nein Danke! 🙅‍♂️"
-
-- category: "Spaßfragen"
-  question: "Isst du Rosinen?"
-  answer1: "Ja"
-  answer2: "Nein"
-
-- category: "Spaßfragen"
-  question: "Urlaub lieber.."
-  answer1: "Berge 🏔️"
-  answer2: "am Meer 🌊"
-
-- category: "Spaßfragen"
-  question: "Team.."
-  answer1: "Hund 🐕"
-  answer2: "Katze 🐈"
-
-- category: "Alltag & Stimmungen"
-  question: "Heute schon Kaffee gehabt?"
-  answer1: "Ja"
-  answer2: "Nein"
-
 - category: "Alltag & Stimmungen"
   question: "Ist dein Tag bisher gut?"
   answer1: "😊 Ja"
   answer2: "Eher nicht 😐"
 
 - category: "Alltag & Stimmungen"
-  question: "Regen in Münster nervt dich?"
+  question: "Heute schon Kaffee gehabt?"
   answer1: "Ja"
   answer2: "Nein"
+
+- category: "Spaßfragen"
+  question: "Münster Tatort?"
+  answer1: "Ich bin Tatort-Fan 🕵️"
+  answer2: "Tatort, Nein Danke! 🙅‍♂️"
+
+- category: "Spaßfragen"
+  question: "Urlaub lieber.."
+  answer1: "Berge 🏔️"
+  answer2: "am Meer 🌊"

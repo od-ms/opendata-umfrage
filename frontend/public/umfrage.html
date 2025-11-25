@@ -10,7 +10,7 @@
         <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
         <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="css/styles.css?v2" rel="stylesheet" />
+        <link href="css/styles.css?v3" rel="stylesheet" />
     </head>
     <body id="page-top">
         
@@ -34,11 +34,14 @@
         <!-- Icon & Kategorie-->
         <header class="myheader masthead bg-primary text-white">
             <div class="container d-flex align-items-center flex-row">
-                <img class="masthead-avatar mb-3" src="assets/img/avataaars.svg" alt="..." />
+              <div class="masthead-icon">
+                <img id="masthead-avatar" class="masthead-avatar mb-3" 
+                  src="assets/category-icons/tasse.svg" alt="..." />
+                  </div>
                 <div style="display:inline-block; margin-left:40px" class="masthead-subheading fs-3">
+                  <div id="qnum" class="fs-3" style="margin-top:8px;">&nbsp;</div>
                   Umfrage-Kategorie:<br />
                   <b id="category" class="fs-1">Stadtentwicklung & Digitalisierung</b>
-                  <div id="qnum" class="fs-3" style="margin-top:8px;">&nbsp;</div>
                 </div>
             </div>
         </header>
@@ -69,6 +72,10 @@
             </div>
         </section>
 <style>
+  .masthead-icon {
+    background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity)) !important;
+    border-radius: 40%;
+  }
   .answer {
     container-type: inline-size;
      cursor: pointer;
@@ -77,28 +84,28 @@
 
 /* Animations: highlight selected answer and fade/slide-in new question */
 .answer.highlight {
-  animation: highlight-pulse 1s ease-in-out forwards;
+  animation: highlight-pulse 700ms ease-in-out forwards;
   box-shadow: 0 10px 30px rgba(0,0,0,0.28);
   transform: translateY(-6px) scale(1.02);
 }
 @keyframes highlight-pulse {
   0% { transform: translateY(0) scale(1); filter: brightness(1); }
   50% {  filter: brightness(1.08); opacity: 1}
-  100% { transform: translateY(0) scale(1.22); filter: brightness(1.43); opacity: 0 }
+  100% { transform: translateY(0) scale(1.12); filter: brightness(1.43); opacity: 0 }
 }
 
 /* Entrance animation for question and answers (now up to 1s) */
 .fade-slide-in {
-  animation: fade-slide-in 1s ease-out forwards;
+  animation: fade-slide-in 500ms ease-out forwards;
 }
 @keyframes fade-slide-in {
   from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0);  }
 }
 
 /* Fade-out animation used when a question and the non-chosen answer disappear */
 .fade-out {
-  animation: fade-out 700ms ease-out forwards;
+  animation: fade-out 500ms ease-out forwards;
 }
 @keyframes fade-out {
   from { opacity: 1; transform: translateY(0) scale(1); }
@@ -108,9 +115,6 @@
 
 
 .vibrate {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
   background-color: rgba(var(--bs-info-rgb));
   transform: scale(1);
   box-shadow: 0 0 0 black;
@@ -118,15 +122,15 @@
 }
 @keyframes anim-vibrate {
   0% {
-    transform: scale(0.95);
+    transform: scale(1);
     box-shadow: 0 0 0 0 rgba(var(--bs-info-rgb), 0.7);
   }
   70% {
-    transform: scale(1);
+    transform: scale(0.97);
     box-shadow: 0 0 0 0.6rem rgba(0, 0, 0, 0);
   }
   100% {
-    transform: scale(0.95);
+    transform: scale(1);
     box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   }
 }
@@ -151,6 +155,14 @@
       const qnumEl = document.getElementById('qnum');
       let questions = [];
       let currentIndex = 0;
+
+      const imgEl = document.getElementById('masthead-avatar')
+      const categorymapping = {
+        'Mob': 'assets/category-icons/tasche.svg',
+        'Bib': 'assets/category-icons/buch.svg',
+        'All': 'assets/category-icons/tasse.svg',
+        'Spa': 'assets/category-icons/birne.svg',
+      }
 
       async function loadQuestions() {
         try {
@@ -179,6 +191,7 @@
         qnumEl.textContent = `Frage ${currentIndex + 1} von ${questions.length}`;
         document.getElementById('a1t').textContent = q.answer1;
         document.getElementById('a2t').textContent = q.answer2;
+        imgEl.src=categorymapping[q.category.substring(0,3)];
         // apply entrance animation to question, category, qnum and answers
         applyEntrance(questionEl);
         applyEntrance(catEl);
@@ -225,7 +238,7 @@
           renderCurrent();
           // small extra delay to avoid reentrancy
           setTimeout(() => { window.__animating = false; }, 80);
-        }, 1000);
+        }, 750);
       }
 
       function applyEntrance(el) {
@@ -242,7 +255,7 @@
           const a2 = document.getElementById('a2');
           if (a1 && !a1.classList.contains('vibrate')) a1.classList.add('vibrate');
           if (a2 && !a2.classList.contains('vibrate')) a2.classList.add('vibrate');
-        }, 1050);
+        }, 550);
       }
 
       document.getElementById('a1').addEventListener('click', () => submitAnswer(1));
