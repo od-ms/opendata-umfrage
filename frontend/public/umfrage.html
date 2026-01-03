@@ -266,6 +266,40 @@
         if (e.key === '2') submitAnswer(2);
       });
 
+      // Joystick/Gamepad support
+      let gamepadStates = {};
+
+      function checkGamepad() {
+        const gamepads = navigator.getGamepads();
+        for (let i = 0; i < gamepads.length; i++) {
+          const gamepad = gamepads[i];
+          if (!gamepad) continue;
+          const prevState = gamepadStates[i] || {};
+          gamepadStates[i] = {};
+          for (let b = 0; b < gamepad.buttons.length; b++) {
+            const button = gamepad.buttons[b];
+            const pressed = button.pressed;
+            const wasPressed = prevState[b] || false;
+            gamepadStates[i][b] = pressed;
+            if (pressed && !wasPressed) {
+              console.log('Gamepad button pressed:', b);
+              // Button pressed
+              if (b === 0) { // Joystick Button #1
+                submitAnswer(1);
+              } else if (b === 1) { // Joystick Button #2
+                submitAnswer(2);
+              }
+            }
+          }
+        }
+      }
+
+      // Check for gamepad input every 100ms
+      if ('getGamepads' in navigator) {
+        console.log('Gamepad API supported');
+        setInterval(checkGamepad, 100);
+      }
+
       loadQuestions();
     </script>
   </body>
