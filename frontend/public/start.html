@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start - Kurz-Umfrage</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('assets/img/sofa.jpg');
+            background-size: contain;
+            background-position: left center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            align-items: top;
+            justify-content: right;
+            color: black;
+            text-shadow: 2px 2px 4px rgba(100,100,100,0.7);
+        }
+        .content {
+            text-align: center;
+            width: 70%;
+            padding: 20px;
+        }
+        .main-text {
+            font-size: 8em;
+            font-weight: bold;
+            margin: 100px 0 50px 0;
+        }
+        .sub-text {
+            font-size: 5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="main-text" id="main-text"></div>
+        <div class="sub-text" id="sub-text"></div>
+    </div>
+    <script>
+        const mainText = "Machen Sie bei unserer kurzen Umfrage mit: 10 Fragen in einer Minute";
+        const subText = "Drücken Sie einen der beiden Buttons zum Start";
+
+        function typeText(element, text, delay = 100) {
+            let i = 0;
+            const interval = setInterval(() => {
+                element.textContent += text[i];
+                i++;
+                if (i >= text.length) {
+                    clearInterval(interval);
+                }
+            }, delay);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const mainElement = document.getElementById('main-text');
+            const subElement = document.getElementById('sub-text');
+
+            typeText(mainElement, mainText, 100);
+            setTimeout(() => {
+                typeText(subElement, subText, 100);
+            }, mainText.length * 100 + 500); // Start sub-text after main-text is done, with a small pause
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === '1' || event.key === '2') {
+                window.location.href = 'umfrage.html';
+            }
+        });
+
+        // Optional: Gamepad support (simplified)
+        window.addEventListener('gamepadconnected', function(e) {
+            console.log('Gamepad connected:', e.gamepad);
+        });
+
+        function checkGamepad() {
+            const gamepads = navigator.getGamepads();
+            for (let i = 0; i < gamepads.length; i++) {
+                const gp = gamepads[i];
+                if (gp) {
+                    if (gp.buttons[0].pressed || gp.buttons[1].pressed) { // Button 1 or 2
+                        window.location.href = 'umfrage.html';
+                    }
+                }
+            }
+        }
+
+        setInterval(checkGamepad, 100); // Check every 100ms
+    </script>
+</body>
+</html>
