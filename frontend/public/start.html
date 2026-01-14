@@ -10,8 +10,8 @@
             padding: 0;
             font-family: Arial, sans-serif;
             background-image: url('assets/img/sofa.jpg');
-            background-size: contain;
-            background-position: left center;
+            background-size: auto 90%;
+            background-position: left bottom;
             background-repeat: no-repeat;
             height: 100vh;
             display: flex;
@@ -32,6 +32,24 @@
         }
         .sub-text {
             font-size: 5em;
+            width: 60%;
+            float: right;
+            margin: 50px 70px 0 0;
+        }
+        .main-text .letter {            min-width:40px;}
+        .sub-text .letter {            min-width:20px;}
+        .letter {
+            display: inline-block;
+            opacity: 0;
+
+            transform: scale(0.5);
+            animation: fadeInScale 0.5s ease-out forwards;
+        }
+        @keyframes fadeInScale {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -45,14 +63,14 @@
         const subText = "Drücken Sie einen der beiden Buttons zum Start";
 
         function typeText(element, text, delay = 100) {
-            let i = 0;
-            const interval = setInterval(() => {
-                element.textContent += text[i];
-                i++;
-                if (i >= text.length) {
-                    clearInterval(interval);
-                }
-            }, delay);
+            element.innerHTML = '';
+            for (let i = 0; i < text.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = text[i];
+                span.className = 'letter';
+                span.style.animationDelay = `${i * delay}ms`;
+                element.appendChild(span);
+            }
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -62,7 +80,7 @@
             typeText(mainElement, mainText, 100);
             setTimeout(() => {
                 typeText(subElement, subText, 100);
-            }, mainText.length * 100 + 500); // Start sub-text after main-text is done, with a small pause
+            }, (mainText.length - 1) * 100 + 1000); // Start sub-text after main-text animation is done, with a small pause
         });
 
         document.addEventListener('keydown', function(event) {
