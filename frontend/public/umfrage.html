@@ -230,6 +230,7 @@
       let questions = [];
       let currentIndex = 0;
       let userAnswers = []; // Store user's answers
+      let inactivityTimer;
 
       const imgEl = document.getElementById('masthead-avatar')
       const categorymapping = {
@@ -237,6 +238,13 @@
         'Bib': 'assets/category-icons/buch.svg',
         'All': 'assets/category-icons/tasse.svg',
         'Spa': 'assets/category-icons/birne.svg',
+      }
+
+      function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+          window.location.href = 'start.html';
+        }, 60000); // 60 seconds
       }
 
       async function loadQuestions() {
@@ -249,6 +257,7 @@
           questions = qs;
           currentIndex = 0;
           renderCurrent();
+          resetInactivityTimer();
         } catch (err) {
           questionEl.textContent = 'Keine Fragen vorhanden. Füge `data/questions.yml` hinzu.';
           questions = [];
@@ -273,6 +282,7 @@
         applyEntrance(qnumEl);
         applyEntrance(document.getElementById('a1'));
         applyEntrance(document.getElementById('a2'));
+        resetInactivityTimer();
       }
 
       async function submitAnswer(n) {
@@ -329,6 +339,7 @@
           }
           // small extra delay to avoid reentrancy
           setTimeout(() => { window.__animating = false; }, 80);
+          resetInactivityTimer();
         }, 750);
       }
 
@@ -403,17 +414,12 @@
         } catch (e) {
           document.getElementById('evaluation-content').innerHTML = '<p>Fehler beim Laden der Auswertung.</p>';
         }
+        resetInactivityTimer();
       }
 
       document.getElementById('a1').addEventListener('click', () => submitAnswer(1));
       document.getElementById('a2').addEventListener('click', () => submitAnswer(2));
-
-      document.getElementById('restart-btn').addEventListener('click', () => {
-          document.querySelector('.content').classList.add('fade-out');
-          setTimeout(() => {
-              location.href = "/start.html";
-          }, 2000); // Wait for fade-out animation to complete
-      });
+      document.getElementById('restart-btn').addEventListener('click', () => {submitAnswer(0);});
 
       window.addEventListener('keydown', (e) => {
         if (e.key === '1') submitAnswer(1);

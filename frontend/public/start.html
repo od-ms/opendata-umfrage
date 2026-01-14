@@ -69,7 +69,7 @@
         }
     </style>
 </head>
-<body>
+<body id="body">
     <img src="assets/img/sofa.jpg" alt="Sofa" class="background-image">
     <div class="content">
         <div class="main-text" id="main-text"></div>
@@ -122,6 +122,10 @@
                 }
             }
         }
+
+        document.getElementById('body').addEventListener('click', () => {
+         window.location.href = 'umfrage.html';
+        });
 
         setInterval(checkGamepad, 100); // Check every 100ms
 
