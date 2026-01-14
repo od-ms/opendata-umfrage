@@ -166,7 +166,10 @@
 #evaluation-content .card {
   background-color: #eee;
 }
-#evaluation {
+#detailed-evaluation {
+  zoom: 1.5;
+}
+#evaluation, #detailed-evaluation {
   transition: opacity 1s ease-out;
   background-image: url('assets/img/sofa.jpg');
   background-size: auto 70%;
@@ -260,7 +263,7 @@
         clearTimeout(inactivityTimer);
         inactivityTimer = setTimeout(() => {
           window.location.href = 'start.html';
-        }, 60000); // 60 seconds
+        }, 100000); // 100 seconds
       }
 
       async function loadQuestions() {
