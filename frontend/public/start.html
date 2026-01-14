@@ -81,13 +81,33 @@
 
         function typeText(element, text, delay = 100) {
             element.innerHTML = '';
-            for (let i = 0; i < text.length; i++) {
-                const span = document.createElement('span');
-                span.textContent = text[i];
-                span.className = 'letter';
-                span.style.animationDelay = `${i * delay}ms`;
-                element.appendChild(span);
-            }
+            const words = text.split(' ');
+            let charIndex = 0;
+            
+            words.forEach((word, wordIndex) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.style.whiteSpace = 'nowrap';
+                
+                for (let i = 0; i < word.length; i++) {
+                    const span = document.createElement('span');
+                    span.textContent = word[i];
+                    span.className = 'letter';
+                    span.style.animationDelay = `${charIndex * delay}ms`;
+                    wordSpan.appendChild(span);
+                    charIndex++;
+                }
+                
+                element.appendChild(wordSpan);
+                
+                if (wordIndex < words.length - 1) {
+                    const spaceSpan = document.createElement('span');
+                    spaceSpan.textContent = ' ';
+                    spaceSpan.className = 'letter';
+                    spaceSpan.style.animationDelay = `${charIndex * delay}ms`;
+                    element.appendChild(spaceSpan);
+                    charIndex++;
+                }
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
