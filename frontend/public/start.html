@@ -9,21 +9,37 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-image: url('assets/img/sofa.jpg');
-            background-size: auto 90%;
-            background-position: left bottom;
-            background-repeat: no-repeat;
+            background-color: white;
             height: 100vh;
             display: flex;
             align-items: top;
             justify-content: right;
             color: black;
             text-shadow: 2px 2px 4px rgba(100,100,100,0.7);
+            position: relative; /* For absolute positioning of the image */
+        }
+        .background-image {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: auto;
+            height: 90vh;
+            transform-origin: left center;
+            animation: subtle-rotate 4s ease-in-out infinite;
+        }
+        @keyframes subtle-rotate {
+            0% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+            100% { transform: rotate(-1deg); }
         }
         .content {
             text-align: center;
             width: 70%;
             padding: 20px;
+            transition: opacity 2s ease-out;
+        }
+        .fade-out {
+            opacity: 0;
         }
         .main-text {
             font-size: 8em;
@@ -54,6 +70,7 @@
     </style>
 </head>
 <body>
+    <img src="assets/img/sofa.jpg" alt="Sofa" class="background-image">
     <div class="content">
         <div class="main-text" id="main-text"></div>
         <div class="sub-text" id="sub-text"></div>
@@ -107,6 +124,14 @@
         }
 
         setInterval(checkGamepad, 100); // Check every 100ms
+
+        // After a few seconds, fade out the content and reload the page
+        setTimeout(() => {
+            document.querySelector('.content').classList.add('fade-out');
+            setTimeout(() => {
+                location.reload();
+            }, 2000); // Wait for fade-out animation to complete
+        }, 30000);
     </script>
 </body>
 </html>
