@@ -81,7 +81,23 @@
                     <!-- Content will be populated by JS -->
                 </div>
                 <div class="text-center mt-4">
-                    <button id="restart-btn" class="btn btn-primary">Umfrage neu starten</button>
+                    <button id="details-btn" class="btn btn-secondary">Mehr Details</button>
+                    <!--button id="restart-btn" class="btn btn-primary ms-2">Umfrage neu starten</button -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Detaillierte Auswertung -->
+        <section class="page-section portfolio" id="detailed-evaluation" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; overflow-y: auto;">
+            <div class="container-fluid" style="width:70%;margin:auto">
+                <h1 class="page-section-heading text-center text-uppercase mt-4 mb-4 text-secondary" style="font-size: 2rem;">
+                  Deine Statistik</h1>
+                <div id="detailed-content" class="row justify-content-center">
+                    <!-- Content will be populated by JS -->
+                </div>
+                <div class="text-center mt-4">
+                    <!-- button id="back-to-results-btn" class="btn btn-secondary">Zurück zu Ergebnissen</button -->
+                    <button id="restart-btn2" class="btn btn-primary ms-2">Umfrage neu starten</button>
                 </div>
             </div>
         </section>
@@ -290,11 +306,15 @@
         if (window.__animating) return; // prevent double submits during animation
         
         if (currentIndex >= questions.length) {
+          if (currentIndex != 222) {
+            return gotoDetailedEvaluation();
+          } 
           // after last question: restart the survey
           document.getElementById('evaluation').classList.add('fade-out2');
           setTimeout(() => {
-            location.reload();
+            window.location.href="start.html";
           }, 2000);          
+          return ;
         }
 
         const q = questions[currentIndex];
@@ -360,6 +380,120 @@
         }, 550);
       }
 
+      async function showDetailedEvaluation() {
+        try {
+          const r = await fetch('/api/stats');
+          const stats = await r.json();
+          const content = document.getElementById('detailed-content');
+          content.innerHTML = '';
+
+          // Fetch all answers
+          const allAnswersRes = await fetch('/api/answers?limit=10000');
+          const allAnswers = await allAnswersRes.json();
+
+          // 1. Count how many users have exactly the same answers as the current user
+          let exactMatches = 0;
+          let correctAnswers = 0;
+          const userAnswerMap = {};
+          userAnswers.forEach(ua => { userAnswerMap[ua.questionId] = ua.answer; });
+          for (const answer of allAnswers) {
+            if (userAnswerMap[answer.question_id] == answer.answer) {
+              correctAnswers++;
+            }
+            if (answer.question_id == 1) {
+              if (correctAnswers === userAnswers.length) {
+                exactMatches++;
+              }
+              correctAnswers = 0;
+            }
+          }
+          // Don't count the current user
+          exactMatches = Math.max(0, exactMatches - 1);
+
+          // 2. Find question with most agreement (most users chose same answer)
+          let maxAgreeQuestion = null;
+          let maxAgreePercent = -1;
+          userAnswers.forEach(ua => {
+            const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
+            const total = qStats['1'] + qStats['2'];
+            const userChoice = ua.answer;
+            const agreePercent = total > 0 ? (qStats[String(userChoice)] / total) * 100 : 0;
+            if (agreePercent > maxAgreePercent) {
+              maxAgreePercent = agreePercent;
+              maxAgreeQuestion = { id: ua.questionId, percent: agreePercent };
+            }
+          });
+
+          // 3. Find question with least agreement
+          let minAgreeQuestion = null;
+          let minAgreePercent = 101;
+          userAnswers.forEach(ua => {
+            const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
+            const total = qStats['1'] + qStats['2'];
+            const userChoice = ua.answer;
+            const agreePercent = total > 0 ? (qStats[String(userChoice)] / total) * 100 : 0;
+            if (agreePercent < minAgreePercent) {
+              minAgreePercent = agreePercent;
+              minAgreeQuestion = { id: ua.questionId, percent: agreePercent };
+            }
+          });
+
+          // Display results
+          const div1 = document.createElement('div');
+          div1.className = 'col-md-8 mb-4';
+          div1.innerHTML = `
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">1. Gleiche Antworten wie du</h5>
+                <p class="card-text">
+                  <strong>${exactMatches}</strong> andere User haben genau gleich abgestimmt wie du.
+                </p>
+              </div>
+            </div>
+          `;
+          content.appendChild(div1);
+
+          if (maxAgreeQuestion) {
+            const q = questions.find(qq => qq.id === maxAgreeQuestion.id);
+            const div2 = document.createElement('div');
+            div2.className = 'col-md-8 mb-4';
+            div2.innerHTML = `
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">2. Größte Übereinstimmung</h5>
+                  <p class="card-text">
+                    <strong>${maxAgreePercent.toFixed(1)}%</strong> der anderen User haben bei dieser Frage wie du abgestimmt:
+                  </p>
+                  <p class="text-muted">\"${q.question}\"</p>
+                </div>
+              </div>
+            `;
+            content.appendChild(div2);
+          }
+
+          if (minAgreeQuestion) {
+            const q = questions.find(qq => qq.id === minAgreeQuestion.id);
+            const div3 = document.createElement('div');
+            div3.className = 'col-md-8 mb-4';
+            div3.innerHTML = `
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">3. Kleinste Übereinstimmung</h5>
+                  <p class="card-text">
+                    Nur <strong>${minAgreePercent.toFixed(1)}%</strong> der anderen User haben bei dieser Frage wie du abgestimmt:
+                  </p>
+                  <p class="text-muted">\"${q.question}\"</p>
+                </div>
+              </div>
+            `;
+            content.appendChild(div3);
+          }
+        } catch (e) {
+          console.error(e);
+          document.getElementById('detailed-content').innerHTML = '<p>Fehler beim Laden der detaillierten Auswertung.</p>';
+        }
+      }
+
       async function showEvaluation() {
         // Hide question section, show evaluation
         document.getElementById('portfolio').style.display = 'none';
@@ -416,10 +550,35 @@
         }
         resetInactivityTimer();
       }
+      function gotoDetailedEvaluation() {
+        document.getElementById('evaluation').style.display = 'none';
+        document.getElementById('detailed-evaluation').style.display = 'block';
+        showDetailedEvaluation();
+        resetInactivityTimer();
+        currentIndex = 222; // special index to indicate end of survey
+      }
 
       document.getElementById('a1').addEventListener('click', () => submitAnswer(1));
       document.getElementById('a2').addEventListener('click', () => submitAnswer(2));
-      document.getElementById('restart-btn').addEventListener('click', () => {submitAnswer(0);});
+
+      document.getElementById('details-btn').addEventListener('click', () => {
+        gotoDetailedEvaluation();
+      });
+
+      /*document.getElementById('back-to-results-btn').addEventListener('click', () => {
+        document.getElementById('detailed-evaluation').style.display = 'none';
+        document.getElementById('evaluation').style.display = 'block';
+        resetInactivityTimer();
+      });
+
+      document.getElementById('restart-btn').addEventListener('click', () => {
+        location.href = '/start.html';
+      });
+      */
+
+      document.getElementById('restart-btn2').addEventListener('click', () => {
+        location.href = '/start.html';
+      });
 
       window.addEventListener('keydown', (e) => {
         if (e.key === '1') submitAnswer(1);
