@@ -32,7 +32,7 @@
         </nav>
    
         <!-- Icon & Kategorie-->
-        <header class="myheader masthead bg-primary text-white">
+        <header id="header" class="myheader masthead bg-primary text-white">
             <div class="container d-flex align-items-center flex-row">
               <div class="masthead-icon">
                 <img id="masthead-avatar" class="masthead-avatar mb-3" 
@@ -71,7 +71,22 @@
                 </div>
             </div>
         </section>
+
+        <!-- Auswertung -->
+        <section class="page-section portfolio" id="evaluation" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;z-index: 1000; overflow-y: auto;">
+            <div class="container-fluid" style="width:70%;margin:auto">
+                <h1 class="page-section-heading text-center text-uppercase mt-4 mb-4 text-secondary" style="font-size: 2rem;">
+                  Bisherige Umfrageergebnisse</h1>
+                <div id="evaluation-content" class="row">
+                    <!-- Content will be populated by JS -->
+                </div>
+                <div class="text-center mt-4">
+                    <button id="restart-btn" class="btn btn-primary">Umfrage neu starten</button>
+                </div>
+            </div>
+        </section>
 <style>
+
   .masthead-icon {
     background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity)) !important;
     border-radius: 40%;
@@ -112,8 +127,6 @@
   to   { opacity: 0; transform: translateY(-12px) scale(0.98); }
 }
 
-
-
 .vibrate {
   background-color: rgba(var(--bs-info-rgb));
   transform: scale(1);
@@ -133,6 +146,67 @@
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   }
+}
+#evaluation-content .card {
+  background-color: #eee;
+}
+#evaluation {
+  transition: opacity 1s ease-out;
+  background-image: url('assets/img/sofa.jpg');
+  background-size: auto 70%;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+}
+.fade-out2 {
+  opacity: 0;
+}
+/* Evaluation chart styles */
+.evaluation-chart {
+  position: relative;
+  height: 40px;
+  background: #e9ecef;
+  border-radius: 4px;
+/*  overflow: hidden; */
+  margin: 10px 0;
+}
+.bar-option1 {
+  height: 100%;
+  background: #28a745;
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+.bar-option2 {
+  height: 100%;
+  background: #007bff;
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+.user-marker {
+  position: absolute;
+  top: -5px;
+  width: 4px;
+  height: 50px;
+  background: #dc3545;
+  z-index: 10;
+}
+.user-marker::after {
+  content: 'Du';
+  position: absolute;
+  top: -20px;
+  left: -15px;
+  background: #dc3545;
+  color: white;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 20px;
 }
 
 </style>
@@ -155,6 +229,7 @@
       const qnumEl = document.getElementById('qnum');
       let questions = [];
       let currentIndex = 0;
+      let userAnswers = []; // Store user's answers
 
       const imgEl = document.getElementById('masthead-avatar')
       const categorymapping = {
@@ -203,6 +278,15 @@
       async function submitAnswer(n) {
         if (!questions.length) return;
         if (window.__animating) return; // prevent double submits during animation
+        
+        if (currentIndex >= questions.length) {
+          // after last question: restart the survey
+          document.getElementById('evaluation').classList.add('fade-out2');
+          setTimeout(() => {
+            location.reload();
+          }, 2000);          
+        }
+
         const q = questions[currentIndex];
         const chosenEl = document.getElementById(n === 1 ? 'a1' : 'a2');
         const otherEl = document.getElementById(n === 1 ? 'a2' : 'a1');
@@ -227,15 +311,22 @@
           } catch (e) {
             /* ignore network errors for now */
           }
+          // Store user's answer
+          userAnswers.push({ questionId: q.id, answer: n });
           // cleanup fade/highlight classes so renderCurrent can animate fresh
           chosenEl.classList.remove('highlight');
           questionEl.classList.remove('fade-out');
           catEl.classList.remove('fade-out');
           qnumEl.classList.remove('fade-out');
           otherEl.classList.remove('fade-out');
-          // advance in ascending order, wrap after the last question
-          currentIndex = (currentIndex + 1) % questions.length;
-          renderCurrent();
+          // advance in ascending order
+          currentIndex++;
+          if (currentIndex >= questions.length) {
+            // All questions answered, show evaluation
+            showEvaluation();
+          } else {
+            renderCurrent();
+          }
           // small extra delay to avoid reentrancy
           setTimeout(() => { window.__animating = false; }, 80);
         }, 750);
@@ -258,8 +349,71 @@
         }, 550);
       }
 
+      async function showEvaluation() {
+        // Hide question section, show evaluation
+        document.getElementById('portfolio').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
+        document.getElementById('evaluation').style.display = 'block';
+
+        // Fetch stats
+        try {
+          const r = await fetch('/api/stats');
+          const stats = await r.json();
+          const content = document.getElementById('evaluation-content');
+          content.innerHTML = '';
+
+          userAnswers.forEach((ua, idx) => {
+            const q = questions.find(qq => qq.id === ua.questionId);
+            if (!q) return;
+            const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
+            const total = qStats['1'] + qStats['2'];
+            const userChoice = ua.answer;
+            const percent1 = total > 0 ? ((qStats['1'] / total) * 100) : 0;
+            const percent2 = total > 0 ? ((qStats['2'] / total) * 100) : 0;
+            const markerPosition = userChoice === 1 ? percent1 / 2 : percent1 + percent2 / 2;
+
+            const div = document.createElement('div');
+            div.className = 'col-md-6 mb-4';
+            div.innerHTML = `
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">${q.question}</h5>
+                  <div class="evaluation-chart">
+                    <div class="bar-option1" style="width: ${percent1}%">${percent1.toFixed(1)}%</div>
+                    <div class="bar-option2" style="width: ${percent2}%">${percent2.toFixed(1)}%</div>
+                    <div class="user-marker" style="left: ${markerPosition}%"></div>
+                  </div>
+                  <div class="row justify-content-center">
+                    <div class="col-md-6">
+                      <p class="card-text">
+                        <strong>${q.answer1}</strong>
+                      </p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="card-text text-end">
+                        <strong>${q.answer2}</strong>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            content.appendChild(div);
+          });
+        } catch (e) {
+          document.getElementById('evaluation-content').innerHTML = '<p>Fehler beim Laden der Auswertung.</p>';
+        }
+      }
+
       document.getElementById('a1').addEventListener('click', () => submitAnswer(1));
       document.getElementById('a2').addEventListener('click', () => submitAnswer(2));
+
+      document.getElementById('restart-btn').addEventListener('click', () => {
+          document.querySelector('.content').classList.add('fade-out');
+          setTimeout(() => {
+              location.href = "/start.html";
+          }, 2000); // Wait for fade-out animation to complete
+      });
 
       window.addEventListener('keydown', (e) => {
         if (e.key === '1') submitAnswer(1);
