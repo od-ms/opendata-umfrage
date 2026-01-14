@@ -1,7 +1,7 @@
 - category: "Mobilität & Stadtleben"
-  question: "Kommst du heute eher mit..."
-  answer1: "Fahrrad 🚲"
-  answer2: "Zu Fuß 🚶"
+  question: "Bist Du mit Fahrrad hier?"
+  answer1: "Ja 🚲"
+  answer2: "Nein"
 
 - category: "Mobilität & Stadtleben"
   question: "Wohnst du..."
@@ -14,7 +14,7 @@
   answer2: "Nein"
 
 - category: "Bibliothek & Medien"
-  question: "Liest du lieber… "
+  question: "Liest du Bücher lieber… "
   answer1: "analog 📚"
   answer2: "digital 📱"
 
@@ -42,3 +42,8 @@
   question: "Urlaub lieber.."
   answer1: "Berge 🏔️"
   answer2: "am Meer 🌊"
+
+- category: "Spaßfragen"
+  question: "Engagierst Du dich ehrenamtlich?"
+  answer1: "Ja"
+  answer2: "Nein"
