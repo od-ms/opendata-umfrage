@@ -366,6 +366,13 @@ span.mysymbol {
   <script>
     function el(tag, text) { const e = document.createElement(tag); if (text) e.textContent = text; return e }
 
+    function formatDuration(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
     async function loadData() {
       const [questionsRes, statsRes, answersRes] = await Promise.all([
         fetch('/api/questions'),
@@ -444,6 +451,10 @@ span.mysymbol {
               continue;
             }
             const duration = startTime - answer.ts;
+            if (duration > (5*60*1000)) {
+              console.warn("ignore answers taking more than 5 minutes", duration);
+              continue;
+            }
             totalTime += duration;
             answeredUsers += 1;
             if (duration < fastestTime) fastestTime = duration;
@@ -452,9 +463,9 @@ span.mysymbol {
         }
       }   
       meanTime = totalTime / answeredUsers;   
-      document.getElementById("f1content").textContent = meanTime + "s im Schnitt";
-      document.getElementById("f2content").textContent = fastestTime + "s für alle Fragen";
-      
+      document.getElementById("f1content").textContent = formatDuration(meanTime) + "s im Schnitt";
+      document.getElementById("f2content").textContent = formatDuration(fastestTime) + "s für alle Fragen";
+
     }
 
 
