@@ -81,7 +81,7 @@
                     <!-- Content will be populated by JS -->
                 </div>
                 <div class="text-center mt-4">
-                    <button id="details-btn" class="btn btn-secondary">Mehr Details</button>
+                    <button id="details-btn" class="btn btn-lg btn-secondary">Button drücken: Nächste Seite</button>
                     <!--button id="restart-btn" class="btn btn-primary ms-2">Umfrage neu starten</button -->
                 </div>
             </div>
@@ -313,10 +313,7 @@
             return gotoDetailedEvaluation();
           } 
           // after last question: restart the survey
-          document.getElementById('evaluation').classList.add('fade-out2');
-          setTimeout(() => {
-            window.location.href="start.html";
-          }, 2000);          
+          window.location.href="start.html";
           return ;
         }
 
@@ -580,7 +577,7 @@
       */
 
       document.getElementById('restart-btn2').addEventListener('click', () => {
-        location.href = '/start.html';
+        window.location.href = '/start.html';
       });
 
       window.addEventListener('keydown', (e) => {
