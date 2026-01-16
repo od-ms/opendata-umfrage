@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tabler Demo</title>
+  <title>Dashboard #1</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
@@ -123,7 +123,7 @@ span.mysymbol {
                   <table class="table table-vcenter">
                     <thead>
                       <tr>
-                        <th></th>
+                        <th>Zeit</th>
                         <th>Frage</th>
                         <th>Antwort</th>
                       </tr>
@@ -132,10 +132,10 @@ span.mysymbol {
                       <tr>
                         <td class="text-nowrap text-secondary"><span>28 Nov 2019</span></td>
                         <td class="td-truncate text-nowrap">
-                          <div class="text-truncate">Fix dart Sass compatibility (#29755)</div>
+                          <div class="text-truncate">test</div>
                         </td>
                         <td class="td-truncate text-nowrap">
-                          <div class="text-truncate">Jajajajajajaja</div>
+                          <div class="text-truncate">test</div>
                         </td>
                       </tr>
                     </tbody>
@@ -184,17 +184,11 @@ span.mysymbol {
                   <div class="row align-items-center">
                     <div class="col-auto">
                       <span
-                        class="bg-x text-white avatar"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-x -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          class="icon icon-1">
-                          <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-                          <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-                        </svg></span>
+                        class="bg-secondary mysymbol">⌀</span>
                     </div>
                     <div class="col">
-                      <div class="font-weight-medium">623 Shares</div>
-                      <div class="text-secondary">16 today</div>
+                      <div class="font-weight-medium">Antwortzeit</div>
+                      <div id="f1content" class="text-secondary"></div>
                     </div>
                   </div>
                 </div>
@@ -205,17 +199,12 @@ span.mysymbol {
                 <div class="card-body">
                   <div class="row align-items-center">
                     <div class="col-auto">
-                      <span
-                        class="bg-facebook text-white avatar"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-facebook -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          class="icon icon-1">
-                          <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" />
-                        </svg></span>
+                        <span
+                        class="bg-secondary mysymbol">🕑</span>
                     </div>
                     <div class="col">
-                      <div class="font-weight-medium">132 Likes</div>
-                      <div class="text-secondary">21 today</div>
+                      <div class="font-weight-medium">Schnellstee</div>
+                      <div id="f2content" class="text-secondary">21 today</div>
                     </div>
                   </div>
                 </div>
@@ -404,7 +393,7 @@ span.mysymbol {
         const qst = allQuestions[a.question_id];
         tr.children[1].children[0].textContent = qst.question;
         tr.children[2].children[0].textContent = a.answer === '1' ? qst.answer1 : qst.answer2;
-        tr.children[0].children[0].textContent = new Date(a.ts).toLocaleString().substring(12, 17);
+        tr.children[0].children[0].textContent = new Date(a.ts).toLocaleString().substring(11, 16);
         latestQuestionsArea.appendChild(tr);
       });
 
@@ -416,7 +405,7 @@ span.mysymbol {
       var clone = document.querySelector('#beispielantworten .beispielantwort').cloneNode(true);
       document.querySelector('#beispielantworten .beispielantwort').remove();
       var randomAnswerNr = randomProperty(stats.byQuestion);
-      for (i=0; i<4; i++) {
+      for (i=0; i<=4; i++) {
         const myTotal = stats.byQuestion[randomAnswerNr]['1'] + stats.byQuestion[randomAnswerNr]['2'];
         const tr = clone.cloneNode(true);
         tr.querySelector('.atext').textContent = allQuestions[randomAnswerNr].question;
@@ -430,6 +419,42 @@ span.mysymbol {
       // count answers
       document.getElementById("a1count").textContent = stats.totals['1'] + " mal gewählt";
       document.getElementById("a2count").textContent = stats.totals['2'] + " mal gewählt";
+
+      // berechne die session time
+      // Fetch all answers
+      const allAnswersRes = await fetch('/api/answers?limit=10000');
+      const allAnswers = await allAnswersRes.json();
+
+      // 1. Count the mean time everyone took to answer the full questionnaire
+      let startTime = 0;
+      let fastestTime = Infinity;
+      let slowestTime = 0;
+      let meanTime = 0;
+      let totalTime = 0;
+      let answeredUsers = 0;
+      const questionCount = questions.length;
+      for (const answer of allAnswers) {
+        if (answer.question_id == 10) {
+          startTime = answer.ts;
+        }
+        if (answer.question_id == 1) {
+          if (startTime > 0) {
+            if (startTime < answer.ts) {
+              console.warn("Answer time error: startTime " + startTime + " < answer.ts " + answer.ts);
+              continue;
+            }
+            const duration = startTime - answer.ts;
+            totalTime += duration;
+            answeredUsers += 1;
+            if (duration < fastestTime) fastestTime = duration;
+            if (duration > slowestTime) slowestTime = duration;
+          }
+        }
+      }   
+      meanTime = totalTime / answeredUsers;   
+      document.getElementById("f1content").textContent = meanTime + "s im Schnitt";
+      document.getElementById("f2content").textContent = fastestTime + "s für alle Fragen";
+      
     }
 
 
