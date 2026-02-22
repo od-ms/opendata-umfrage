@@ -243,6 +243,8 @@
     </div -->
 
       <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentSet = urlParams.get('questions') || '1';
       const questionEl = document.getElementById('question');
       const catEl = document.getElementById('category');
       const qnumEl = document.getElementById('qnum');
@@ -268,7 +270,7 @@
 
       async function loadQuestions() {
         try {
-          const r = await fetch('/api/questions');
+          const r = await fetch('/api/questions?set=' + currentSet);
           if (!r.ok) throw new Error('no questions');
           const qs = await r.json();
           if (!Array.isArray(qs) || qs.length === 0) throw new Error('empty');
@@ -336,7 +338,7 @@
             await fetch('/api/answers', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ questionId: q.id, answer: n })
+              body: JSON.stringify({ questionId: q.id, answer: n, set: currentSet })
             });
           } catch (e) {
             /* ignore network errors for now */
@@ -382,13 +384,13 @@
 
       async function showDetailedEvaluation() {
         try {
-          const r = await fetch('/api/stats');
+          const r = await fetch('/api/stats?set=' + currentSet);
           const stats = await r.json();
           const content = document.getElementById('detailed-content');
           content.innerHTML = '';
 
           // Fetch all answers
-          const allAnswersRes = await fetch('/api/answers?limit=10000');
+          const allAnswersRes = await fetch('/api/answers?set=' + currentSet + '&limit=10000');
           const allAnswers = await allAnswersRes.json();
 
           // 1. Count how many users have exactly the same answers as the current user
@@ -502,7 +504,7 @@
 
         // Fetch stats
         try {
-          const r = await fetch('/api/stats');
+          const r = await fetch('/api/stats?set=' + currentSet);
           const stats = await r.json();
           const content = document.getElementById('evaluation-content');
           content.innerHTML = '';

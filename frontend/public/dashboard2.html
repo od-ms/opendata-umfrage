@@ -158,13 +158,15 @@ span.mysymbol {
   </script>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentSet = urlParams.get('questions') || '1';
     function el(tag, text) { const e = document.createElement(tag); if (text) e.textContent = text; return e }
 
     async function loadData() {
       const [questionsRes, statsRes, answersRes] = await Promise.all([
-        fetch('/api/questions'),
-        fetch('/api/stats'),
-        fetch('/api/answers?limit=50')
+        fetch('/api/questions?set=' + currentSet),
+        fetch('/api/stats?set=' + currentSet),
+        fetch('/api/answers?set=' + currentSet + '&limit=50')
       ]);
       const questions = await questionsRes.json();
       const stats = await statsRes.json();
