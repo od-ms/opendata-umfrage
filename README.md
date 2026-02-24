@@ -1,6 +1,12 @@
 # opendata-umfrage
 Ein kleines Umfrage-Tool für das Stadtbücherei-Foyer
 
+## Neue Umfragen erstellen
+
+* Datei anlegen: data/questionsX.yml 
+* Umfrage starten mit: https://umfrage.domain.test/umfrage.html?questions=X -> dann wird das question set nr X geladen.
+* Parallel lässt sich das Dashboard so aufrufen:  https://umfrage.domain.test/dashboard.html?questions=X
+
 ## Folien
 
 PDF-Präsentation in einzelne PNGs (eins pro Seite) umwandeln:

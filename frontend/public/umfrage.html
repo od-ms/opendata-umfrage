@@ -261,10 +261,13 @@
         'Spa': 'assets/category-icons/birne.svg',
       }
 
+      function gotoStartPage() {
+        window.location.href = `start.html?questions=${currentSet}`;
+      }
       function resetInactivityTimer() {
         clearTimeout(inactivityTimer);
         inactivityTimer = setTimeout(() => {
-          window.location.href = 'start.html';
+          gotoStartPage();
         }, 100000); // 100 seconds
       }
 
@@ -315,7 +318,7 @@
             return gotoDetailedEvaluation();
           } 
           // after last question: restart the survey
-          window.location.href="start.html";
+          gotoStartPage();
           return ;
         }
 
@@ -579,7 +582,7 @@
       */
 
       document.getElementById('restart-btn2').addEventListener('click', () => {
-        window.location.href = '/start.html';
+        gotoStartPage();
       });
 
       window.addEventListener('keydown', (e) => {

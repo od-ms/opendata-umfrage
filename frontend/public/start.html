@@ -79,6 +79,11 @@
         const mainText = "Mach mit bei unserer kurzen Umfrage: 10 Fragen in einer Minute";
         const subText = "Zum Start einen der beiden Buttons drücken";
 
+        function start() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentSet = urlParams.get('questions') || '1';
+            window.location.href = `umfrage.html?questions=${currentSet}`;
+        }
         function typeText(element, text, delay = 100) {
             element.innerHTML = '';
             const words = text.split(' ');
@@ -122,7 +127,7 @@
 
         document.addEventListener('keydown', function(event) {
             if (event.key === '1' || event.key === '2') {
-                window.location.href = 'umfrage.html';
+                start();
             }
         });
 
@@ -137,14 +142,14 @@
                 const gp = gamepads[i];
                 if (gp) {
                     if (gp.buttons[0].pressed || gp.buttons[1].pressed) { // Button 1 or 2
-                        window.location.href = 'umfrage.html';
+                        start();
                     }
                 }
             }
         }
 
         document.getElementById('body').addEventListener('click', () => {
-         window.location.href = 'umfrage.html';
+            start();
         });
 
         setInterval(checkGamepad, 100); // Check every 100ms
