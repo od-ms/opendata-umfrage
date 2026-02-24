@@ -1,9 +1,39 @@
-- category: "Umwelt & Nachhaltigkeit"
-  question: "Nutzt du öffentliche Verkehrsmittel?"
-  answer1: "Ja 🚌"
+- category: "Computer"
+  question: "Setzt Du privat Open-Source-Software ein (z.B. OpenOffice)?"
+  answer1: "Ja"
   answer2: "Nein"
 
-- category: "Umwelt & Nachhaltigkeit"
-  question: "Kaufst du Bio-Produkte?"
-  answer1: "Oft"
-  answer2: "Selten"
+- category: "Computer"
+  question: "Machst du regelmäßig Backups deiner wichtigsten Daten?"
+  answer1: "Ja"
+  answer2: "Nein"
+
+- category: "Computer"
+  question: "Benutzt Du datenschutzfreundliche Browser und Suchmaschinen?"
+  answer1: "Ja"
+  answer2: "Nein"
+
+- category: "Handy"
+  question: "Liest du, welchen Zugriff eine App verlangt, bevor du zustimmst?"
+  answer1: "Ja"
+  answer2: "Nein"
+
+- category: "Handy"
+  question: "Bezahlst Du schon mit Wero, der europäischen Paypal-Alternative?"
+  answer1: "Ja"
+  answer2: "Nein"
+
+- category: "Big Tech"
+  question: "Welche Maps-/Karten-App nutzt Du?"
+  answer1: "Auf Open Street Map basierend"
+  answer2: "Google Maps, Apple, .."
+
+- category: "Big Tech"
+  question: "Ist Dein Haupt-Email-Konto bei Apple, Google oder Microsoft?"
+  answer1: "⭐ Nein"
+  answer2: "Ja"
+
+
+    
+
+ 

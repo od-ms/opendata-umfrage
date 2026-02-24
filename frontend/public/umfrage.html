@@ -36,12 +36,12 @@
             <div class="container d-flex align-items-center flex-row">
               <div class="masthead-icon">
                 <img id="masthead-avatar" class="masthead-avatar mb-3" 
-                  src="assets/category-icons/tasse.svg" alt="..." />
+                  src="" alt="..." />
                   </div>
                 <div style="display:inline-block; margin-left:40px" class="masthead-subheading fs-3">
                   <div id="qnum" class="fs-3" style="margin-top:8px;">&nbsp;</div>
                   Umfrage-Kategorie:<br />
-                  <b id="category" class="fs-1">Stadtentwicklung & Digitalisierung</b>
+                  <b id="category" class="fs-1"> &nbsp; </b>
                 </div>
             </div>
         </header>
@@ -50,14 +50,15 @@
         <section class=" page-section portfolio" id="portfolio">
             <div class="container">
 
-                <h1 id="question" style="font-size:5em;line-height:1em;margin-bottom:100px" class="page-section-heading text-center text-uppercase mb-7 text-secondary">Liest Du lieber..</h1>
+                <h1 id="question" style="font-size:5em;line-height:1em;margin-bottom:100px" 
+                  class="page-section-heading text-center mb-7 text-secondary"> &nbsp; </h1>
 
                 <!-- Antworten -->
                 <div id="answers" class="row justify-content-center">
                     <div class="col-md-6 col-lg-5 mb-5">
                         <div id="a1" class="answer bg-info rounded portfolio-item-caption d-flex flex-column align-items-center justify-content-center h-100 w-100 text-center vibrate">
                             <div class="a1 mt-2">Antwort 1:</div>
-                            <h2 id="a1t" class="page-section-heading text-secondary m-5">digital</h2>
+                            <h2 id="a1t" class="page-section-heading text-secondary m-5"> &nbsp; </h2>
                       </div>
                     </div>
                     <div class="col-md-6 col-lg-2 mb-5">
@@ -65,7 +66,7 @@
                     <div class="col-md-6 col-lg-5 mb-5">
                         <div id="a2" class="answer bg-info rounded portfolio-item-caption d-flex flex-column align-items-center justify-content-center h-100 w-100 text-center vibrate">
                             <div class="a1 mt-2">Antwort 2:</div>
-                            <h2 id="a2t" class="page-section-heading text-secondary m-5">digital</h2>
+                            <h2 id="a2t" class="page-section-heading text-secondary m-5"> &nbsp; </h2>
                       </div>
                     </div>
                 </div>
@@ -259,6 +260,7 @@
         'Bib': 'assets/category-icons/buch.svg',
         'All': 'assets/category-icons/tasse.svg',
         'Spa': 'assets/category-icons/birne.svg',
+        '-': 'assets/category-icons/multiple-devices-svgrepo-com.svg',
       }
 
       function gotoStartPage() {
@@ -299,7 +301,7 @@
         qnumEl.textContent = `Frage ${currentIndex + 1} von ${questions.length}`;
         document.getElementById('a1t').textContent = q.answer1;
         document.getElementById('a2t').textContent = q.answer2;
-        imgEl.src=categorymapping[q.category.substring(0,3)];
+        imgEl.src=categorymapping[q.category.substring(0,3)] || categorymapping['-'];
         // apply entrance animation to question, category, qnum and answers
         applyEntrance(questionEl);
         applyEntrance(catEl);
@@ -387,111 +389,142 @@
 
       async function showDetailedEvaluation() {
         try {
-          const r = await fetch('/api/stats?set=' + currentSet);
-          const stats = await r.json();
           const content = document.getElementById('detailed-content');
           content.innerHTML = '';
 
-          // Fetch all answers
-          const allAnswersRes = await fetch('/api/answers?set=' + currentSet + '&limit=10000');
-          const allAnswers = await allAnswersRes.json();
+          if (currentSet == 2) {
+            let userPoints = 0;
+            let totalPoints = userAnswers.length;
+            userAnswers.forEach(ua => { if (ua.answer == 1) userPoints++; });
+            let rating = "😍 SUPER!"
+            if (userPoints <= totalPoints * 0.8) rating = "😀 GUT!";
+            if (userPoints <= totalPoints * 0.4) rating = "😳 Da geht noch was!";
 
-          // 1. Count how many users have exactly the same answers as the current user
-          let exactMatches = 0;
-          let correctAnswers = 0;
-          const userAnswerMap = {};
-          userAnswers.forEach(ua => { userAnswerMap[ua.questionId] = ua.answer; });
-          for (const answer of allAnswers) {
-            if (userAnswerMap[answer.question_id] == answer.answer) {
-              correctAnswers++;
-            }
-            if (answer.question_id == 1) {
-              if (correctAnswers === userAnswers.length) {
-                exactMatches++;
+            // Display results
+            const div1 = document.createElement('div');
+            div1.className = 'col-md-8 mb-4';
+            div1.innerHTML = `
+              <div class="card">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Dein Digitale-Souveränitäts-Ranking</h5>
+                  <p class="card-text fs-2">
+                    <strong>${userPoints} von ${totalPoints} Punkten</strong>
+                  </p>
+                  <p class="card-text fs-1">
+                    <strong>${rating}</strong>
+                  </p>
+                  Tipps für mehr digitale Souveränätit gibt es unter <b>www.di.day</b>!
+                  </div>
+              </div>
+            `;
+            content.appendChild(div1);
+
+          } else {
+
+            const r = await fetch('/api/stats?set=' + currentSet);
+            const stats = await r.json();
+
+            // Fetch all answers
+            const allAnswersRes = await fetch('/api/answers?set=' + currentSet + '&limit=10000');
+            const allAnswers = await allAnswersRes.json();
+
+            // 1. Count how many users have exactly the same answers as the current user
+            let exactMatches = 0;
+            let correctAnswers = 0;
+            const userAnswerMap = {};
+            userAnswers.forEach(ua => { userAnswerMap[ua.questionId] = ua.answer; });
+            for (const answer of allAnswers) {
+              if (userAnswerMap[answer.question_id] == answer.answer) {
+                correctAnswers++;
               }
-              correctAnswers = 0;
+              if (answer.question_id == 1) {
+                if (correctAnswers === userAnswers.length) {
+                  exactMatches++;
+                }
+                correctAnswers = 0;
+              }
             }
-          }
-          // Don't count the current user
-          exactMatches = Math.max(0, exactMatches - 1);
+            // Don't count the current user
+            exactMatches = Math.max(0, exactMatches - 1);
 
-          // 2. Find question with most agreement (most users chose same answer)
-          let maxAgreeQuestion = null;
-          let maxAgreePercent = -1;
-          userAnswers.forEach(ua => {
-            const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
-            const total = qStats['1'] + qStats['2'];
-            const userChoice = ua.answer;
-            const agreePercent = total > 0 ? (qStats[String(userChoice)] / total) * 100 : 0;
-            if (agreePercent > maxAgreePercent) {
-              maxAgreePercent = agreePercent;
-              maxAgreeQuestion = { id: ua.questionId, percent: agreePercent };
-            }
-          });
+            // 2. Find question with most agreement (most users chose same answer)
+            let maxAgreeQuestion = null;
+            let maxAgreePercent = -1;
+            userAnswers.forEach(ua => {
+              const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
+              const total = qStats['1'] + qStats['2'];
+              const userChoice = ua.answer;
+              const agreePercent = total > 0 ? (qStats[String(userChoice)] / total) * 100 : 0;
+              if (agreePercent > maxAgreePercent) {
+                maxAgreePercent = agreePercent;
+                maxAgreeQuestion = { id: ua.questionId, percent: agreePercent };
+              }
+            });
 
-          // 3. Find question with least agreement
-          let minAgreeQuestion = null;
-          let minAgreePercent = 101;
-          userAnswers.forEach(ua => {
-            const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
-            const total = qStats['1'] + qStats['2'];
-            const userChoice = ua.answer;
-            const agreePercent = total > 0 ? (qStats[String(userChoice)] / total) * 100 : 0;
-            if (agreePercent < minAgreePercent) {
-              minAgreePercent = agreePercent;
-              minAgreeQuestion = { id: ua.questionId, percent: agreePercent };
-            }
-          });
+            // 3. Find question with least agreement
+            let minAgreeQuestion = null;
+            let minAgreePercent = 101;
+            userAnswers.forEach(ua => {
+              const qStats = stats.byQuestion[ua.questionId] || { '1': 0, '2': 0 };
+              const total = qStats['1'] + qStats['2'];
+              const userChoice = ua.answer;
+              const agreePercent = total > 0 ? (qStats[String(userChoice)] / total) * 100 : 0;
+              if (agreePercent < minAgreePercent) {
+                minAgreePercent = agreePercent;
+                minAgreeQuestion = { id: ua.questionId, percent: agreePercent };
+              }
+            });
 
-          // Display results
-          const div1 = document.createElement('div');
-          div1.className = 'col-md-8 mb-4';
-          div1.innerHTML = `
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">1. Gleiche Antworten wie du</h5>
-                <p class="card-text">
-                  <strong>${exactMatches}</strong> andere User haben genau gleich abgestimmt wie du.
-                </p>
-              </div>
-            </div>
-          `;
-          content.appendChild(div1);
-
-          if (maxAgreeQuestion) {
-            const q = questions.find(qq => qq.id === maxAgreeQuestion.id);
-            const div2 = document.createElement('div');
-            div2.className = 'col-md-8 mb-4';
-            div2.innerHTML = `
+            // Display results
+            const div1 = document.createElement('div');
+            div1.className = 'col-md-8 mb-4';
+            div1.innerHTML = `
               <div class="card">
                 <div class="card-body">
-                  <h5 class="card-title">2. Größte Übereinstimmung</h5>
+                  <h5 class="card-title">1. Gleiche Antworten wie du</h5>
                   <p class="card-text">
-                    <strong>${maxAgreePercent.toFixed(1)}%</strong> der anderen User haben bei dieser Frage wie du abgestimmt:
+                    <strong>${exactMatches}</strong> andere User haben genau gleich abgestimmt wie du.
                   </p>
-                  <p class="text-muted">\"${q.question}\"</p>
                 </div>
               </div>
             `;
-            content.appendChild(div2);
-          }
+            content.appendChild(div1);
 
-          if (minAgreeQuestion) {
-            const q = questions.find(qq => qq.id === minAgreeQuestion.id);
-            const div3 = document.createElement('div');
-            div3.className = 'col-md-8 mb-4';
-            div3.innerHTML = `
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">3. Kleinste Übereinstimmung</h5>
-                  <p class="card-text">
-                    Nur <strong>${minAgreePercent.toFixed(1)}%</strong> der anderen User haben bei dieser Frage wie du abgestimmt:
-                  </p>
-                  <p class="text-muted">\"${q.question}\"</p>
+            if (maxAgreeQuestion) {
+              const q = questions.find(qq => qq.id === maxAgreeQuestion.id);
+              const div2 = document.createElement('div');
+              div2.className = 'col-md-8 mb-4';
+              div2.innerHTML = `
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">2. Größte Übereinstimmung</h5>
+                    <p class="card-text">
+                      <strong>${maxAgreePercent.toFixed(1)}%</strong> der anderen User haben bei dieser Frage wie du abgestimmt:
+                    </p>
+                    <p class="text-muted">\"${q.question}\"</p>
+                  </div>
                 </div>
-              </div>
-            `;
-            content.appendChild(div3);
+              `;
+              content.appendChild(div2);
+            }
+
+            if (minAgreeQuestion) {
+              const q = questions.find(qq => qq.id === minAgreeQuestion.id);
+              const div3 = document.createElement('div');
+              div3.className = 'col-md-8 mb-4';
+              div3.innerHTML = `
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">3. Kleinste Übereinstimmung</h5>
+                    <p class="card-text">
+                      Nur <strong>${minAgreePercent.toFixed(1)}%</strong> der anderen User haben bei dieser Frage wie du abgestimmt:
+                    </p>
+                    <p class="text-muted">\"${q.question}\"</p>
+                  </div>
+                </div>
+              `;
+              content.appendChild(div3);
+            }
           }
         } catch (e) {
           console.error(e);
