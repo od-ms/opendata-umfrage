@@ -316,9 +316,9 @@
         if (window.__animating) return; // prevent double submits during animation
         
         if (currentIndex >= questions.length) {
-          if (currentIndex != 222) {
-            return gotoDetailedEvaluation();
-          } 
+//          if (currentIndex != 222) {
+//            return gotoDetailedEvaluation();
+//          } 
           // after last question: restart the survey
           gotoStartPage();
           return ;
@@ -360,7 +360,8 @@
           currentIndex++;
           if (currentIndex >= questions.length) {
             // All questions answered, show evaluation
-            showEvaluation();
+            // showEvaluation();
+            gotoDetailedEvaluation();
           } else {
             renderCurrent();
           }
@@ -398,7 +399,7 @@
             userAnswers.forEach(ua => { if (ua.answer == 1) userPoints++; });
             let rating = "😍 SUPER!"
             if (userPoints <= totalPoints * 0.8) rating = "😀 GUT!";
-            if (userPoints <= totalPoints * 0.4) rating = "😳 Da geht noch was!";
+            if (userPoints <= totalPoints * 0.45) rating = "😳 Da geht noch was!";
 
             // Display results
             const div1 = document.createElement('div');
@@ -589,6 +590,8 @@
         resetInactivityTimer();
       }
       function gotoDetailedEvaluation() {
+        document.getElementById('portfolio').style.display = 'none';
+        document.getElementById('header').style.display = 'none';
         document.getElementById('evaluation').style.display = 'none';
         document.getElementById('detailed-evaluation').style.display = 'block';
         showDetailedEvaluation();
